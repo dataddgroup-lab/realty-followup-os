@@ -1,0 +1,229 @@
+{
+  "project": "Realty Follow-Up OS - Polished MVP",
+  "totalBudget": "$5.50",
+  "phases": [
+    {
+      "name": "Phase 1: Core CRM ($1.80)",
+      "model": "haiku",
+      "tasks": [
+        {
+          "id": "db-schema",
+          "name": "Supabase database schema (tenants, users, contacts, activities, showings)",
+          "files": ["supabase/migrations/001_schema.sql"],
+          "estimatedTokens": 600,
+          "estimatedCost": "$0.02"
+        },
+        {
+          "id": "rls-policies",
+          "name": "RLS policies for multi-tenant isolation",
+          "files": ["supabase/migrations/002_rls.sql"],
+          "estimatedTokens": 400,
+          "estimatedCost": "$0.01"
+        },
+        {
+          "id": "api-contacts",
+          "name": "GET/POST /api/contacts - contact CRUD",
+          "files": ["app/api/contacts/route.ts"],
+          "estimatedTokens": 500,
+          "estimatedCost": "$0.02"
+        },
+        {
+          "id": "api-activities",
+          "name": "POST /api/activities - manual activity entry",
+          "files": ["app/api/activities/route.ts"],
+          "estimatedTokens": 400,
+          "estimatedCost": "$0.01"
+        },
+        {
+          "id": "api-timeline",
+          "name": "GET /api/contacts/:id/timeline - activities list",
+          "files": ["app/api/contacts/[id]/timeline/route.ts"],
+          "estimatedTokens": 350,
+          "estimatedCost": "$0.01"
+        },
+        {
+          "id": "ui-contacts-list",
+          "name": "React component: ContactsList (create, edit, delete)",
+          "files": ["app/components/ContactsList.tsx"],
+          "estimatedTokens": 400,
+          "estimatedCost": "$0.01"
+        },
+        {
+          "id": "ui-timeline",
+          "name": "React component: ContactTimeline (activities display)",
+          "files": ["app/components/ContactTimeline.tsx"],
+          "estimatedTokens": 350,
+          "estimatedCost": "$0.01"
+        }
+      ],
+      "subtotalTokens": 3000,
+      "subtotalCost": "$0.09",
+      "deliverables": "✅ Contact CRUD, Timeline view, RLS verified"
+    },
+    {
+      "name": "Phase 2: AI Summaries ($1.50)",
+      "model": "sonnet",
+      "tasks": [
+        {
+          "id": "ai-gateway",
+          "name": "AI Gateway - entitlement check, quota enforcement, Claude call",
+          "files": ["app/api/ai/summarize/route.ts"],
+          "estimatedTokens": 1000,
+          "estimatedCost": "$0.03"
+        },
+        {
+          "id": "quota-system",
+          "name": "Quota table + trial setup (10 summaries for trial tenants)",
+          "files": ["supabase/migrations/003_quotas.sql"],
+          "estimatedTokens": 400,
+          "estimatedCost": "$0.01"
+        },
+        {
+          "id": "ui-summarize",
+          "name": "Summarize button + result display in timeline",
+          "files": ["app/components/SummarizeButton.tsx"],
+          "estimatedTokens": 600,
+          "estimatedCost": "$0.02"
+        },
+        {
+          "id": "quota-indicator",
+          "name": "Quota badge in header (remaining summaries)",
+          "files": ["app/components/QuotaBadge.tsx"],
+          "estimatedTokens": 300,
+          "estimatedCost": "$0.01"
+        }
+      ],
+      "subtotalTokens": 2300,
+      "subtotalCost": "$0.07",
+      "deliverables": "✅ AI summaries, Quota enforcement, Quota display"
+    },
+    {
+      "name": "Phase 3: UI Polish ($1.00)",
+      "model": "haiku",
+      "tasks": [
+        {
+          "id": "tailwind-setup",
+          "name": "Tailwind CSS configuration + globals",
+          "files": ["app/globals.css", "tailwind.config.ts"],
+          "estimatedTokens": 200,
+          "estimatedCost": "$0.01"
+        },
+        {
+          "id": "layout-polish",
+          "name": "Header + Sidebar + Main layout (responsive)",
+          "files": ["app/layout.tsx", "app/components/Header.tsx", "app/components/Sidebar.tsx"],
+          "estimatedTokens": 600,
+          "estimatedCost": "$0.02"
+        },
+        {
+          "id": "cards-polish",
+          "name": "Contact cards, timeline cards, button states",
+          "files": ["app/components/ContactCard.tsx", "app/components/ActivityCard.tsx"],
+          "estimatedTokens": 500,
+          "estimatedCost": "$0.02"
+        },
+        {
+          "id": "responsive",
+          "name": "Mobile/tablet/desktop responsive design",
+          "files": ["app/components/*(all components updated)"],
+          "estimatedTokens": 400,
+          "estimatedCost": "$0.01"
+        },
+        {
+          "id": "empty-states",
+          "name": "Empty states (no contacts, no activities, no quota)",
+          "files": ["app/components/EmptyState.tsx"],
+          "estimatedTokens": 300,
+          "estimatedCost": "$0.01"
+        }
+      ],
+      "subtotalTokens": 2000,
+      "subtotalCost": "$0.06",
+      "deliverables": "✅ Professional UI, Responsive design, Polished interactions"
+    },
+    {
+      "name": "Phase 4: Deployment ($1.20)",
+      "model": "haiku",
+      "tasks": [
+        {
+          "id": "tests-rls",
+          "name": "RLS isolation tests (tenant A cannot read tenant B)",
+          "files": ["tests/rls.test.ts"],
+          "estimatedTokens": 500,
+          "estimatedCost": "$0.02"
+        },
+        {
+          "id": "tests-quota",
+          "name": "Quota enforcement tests (10 limit, then 429)",
+          "files": ["tests/quota.test.ts"],
+          "estimatedTokens": 400,
+          "estimatedCost": "$0.01"
+        },
+        {
+          "id": "tests-e2e",
+          "name": "E2E flow: create contact → add activity → summarize",
+          "files": ["tests/e2e.spec.ts"],
+          "estimatedTokens": 500,
+          "estimatedCost": "$0.02"
+        },
+        {
+          "id": "env-setup",
+          "name": ".env.local.example, package.json, CI config",
+          "files": [".env.local.example", "package.json", ".github/workflows/test.yml"],
+          "estimatedTokens": 400,
+          "estimatedCost": "$0.01"
+        },
+        {
+          "id": "deploy-guide",
+          "name": "Step-by-step: Supabase setup, Stripe basic, Vercel deploy",
+          "files": ["docs/DEPLOY.md"],
+          "estimatedTokens": 300,
+          "estimatedCost": "$0.01"
+        }
+      ],
+      "subtotalTokens": 2100,
+      "subtotalCost": "$0.07",
+      "deliverables": "✅ Tests passing, Deploy guide ready, Vercel live"
+    }
+  ],
+  "estimates": {
+    "totalTokens": 9400,
+    "totalCost": "$0.29",
+    "breakdown": {
+      "phase1": "$0.09",
+      "phase2": "$0.07",
+      "phase3": "$0.06",
+      "phase4": "$0.07"
+    }
+  },
+  "notes": [
+    "All Haiku tasks use aggressive context reuse (previous file outputs)",
+    "Sonnet task (AI Gateway) is single complex task, rest are Haiku",
+    "Tests are critical - RLS and quota must be verified",
+    "UI polish focuses on responsiveness and professional appearance",
+    "Deployment guide handles Supabase + Vercel (Stripe optional for Phase 1)",
+    "Budget has 40% cushion built in ($0.29 estimate vs $0.55 allocated for Phase 1)"
+  ],
+  "validators": [
+    {
+      "name": "Database schema",
+      "command": "supabase db diff --dry"
+    },
+    {
+      "name": "TypeScript",
+      "command": "npm run type-check"
+    },
+    {
+      "name": "Build",
+      "command": "npm run build"
+    },
+    {
+      "name": "Tests",
+      "command": "npm test"
+    },
+    {
+      "name": "E2E smoke",
+      "command": "npx playwright test --grep @smoke || true"
+    }
+  ]
+}

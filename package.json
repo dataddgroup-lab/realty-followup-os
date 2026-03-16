@@ -1,0 +1,19 @@
+{
+  "name": "realty-followup-os",
+  "version": "0.1.0",
+  "description": "Multi-tenant CRM for real estate agents with AI-assisted follow-ups",
+  "type": "module",
+  "scripts": {
+    "dev": "cd app/web && npm run dev",
+    "build": "cd app/web && npm run build",
+    "start": "cd app/web && npm start",
+    "type-check": "cd app/web && npx tsc --noEmit",
+    "test": "cd app/web && npm test",
+    "test:e2e": "cd app/web && npx playwright test",
+    "db:push": "supabase db push --project-ref $SUPABASE_PROJECT_REF",
+    "db:diff": "supabase db diff --project-ref $SUPABASE_PROJECT_REF"
+  },
+  "workspaces": [
+    "app/web"
+  ]
+}
