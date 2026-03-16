@@ -2,25 +2,25 @@
 
 import { useState } from 'react'
 
+interface DraftResult {
+  draft: string
+  tone: string
+  units_used: number
+  quota_remaining: number
+}
+
 interface DraftMessageButtonProps {
+  contactId: string
   contactName: string
-  contactEmail: string
-  context: string
   tenantId: string
 }
 
-export function DraftMessageButton({
-  contactName,
-  contactEmail,
-  context,
-  tenantId,
-}: DraftMessageButtonProps) {
+export function DraftMessageButton({ contactId, contactName, tenantId }: DraftMessageButtonProps) {
   const [loading, setLoading] = useState(false)
-  const [draft, setDraft] = useState<string | null>(null)
+  const [draft, setDraft] = useState<DraftResult | null>(null)
   const [error, setError] = useState<string | null>(null)
-  const [copied, setCopied] = useState(false)
 
-  const handleDraftMessage = async () => {
+  const handleDraft = async () => {
     try {
       setLoading(true)
       setError(null)
@@ -31,22 +31,8 @@ export function DraftMessageButton({
           'x-tenant-id': tenantId,
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          contact_name: contactName,
-          contact_email: contactEmail,
-          context,
-        }),
+        body: JSON.stringify({ contactId, contactName }),
       })
-
-      if (res.status === 429) {
-        setError('Insufficient quota. Upgrade for more drafts.')
-        return
-      }
-
-      if (res.status === 402) {
-        setError('AI not enabled. Upgrade your plan.')
-        return
-      }
 
       if (!res.ok) {
         const data = await res.json()
@@ -54,89 +40,46 @@ export function DraftMessageButton({
       }
 
       const data = await res.json()
-      setDraft(data.draft)
-    } catch (err: any) {
-      setError(err.message)
+      setDraft(data)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Error drafting message')
     } finally {
       setLoading(false)
     }
   }
 
-  const handleCopy = () => {
-    if (draft) {
-      navigator.clipboard.writeText(draft)
-      setCopied(true)
-      setTimeout(() => setCopied(false), 2000)
-    }
-  }
-
   return (
-    <div className="space-y-4">
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
       <button
-        onClick={handleDraftMessage}
+        onClick={handleDraft}
         disabled={loading}
-        className={`w-full py-3 px-4 rounded-lg font-medium transition-all duration-200 flex items-center justify-center gap-2 ${
-          loading
-            ? 'bg-purple-100 text-purple-600 cursor-wait'
-            : 'btn-primary bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700'
-        }`}
+        style={{
+          padding: '10px 16px',
+          backgroundColor: loading ? '#e0e0e0' : '#059669',
+          color: 'white',
+          borderRadius: '6px',
+          border: 'none',
+          cursor: loading ? 'wait' : 'pointer',
+          fontWeight: 'bold',
+          fontSize: '14px',
+        }}
       >
-        {loading ? (
-          <>
-            <span className="animate-spin">⚙️</span>
-            Drafting...
-          </>
-        ) : (
-          <>
-            <span>✉️</span>
-            Draft Email
-          </>
-        )}
+        {loading ? '⏳ Drafting...' : '📧 Draft Message'}
       </button>
 
       {error && (
-        <div className="p-4 bg-red-50 border border-red-200 rounded-lg scale-in">
-          <div className="flex gap-3">
-            <span>⚠️</span>
-            <p className="text-sm text-red-700">{error}</p>
-          </div>
+        <div style={{ padding: '12px', backgroundColor: '#fee', borderRadius: '6px', color: '#c33', fontSize: '14px' }}>
+          {error}
         </div>
       )}
 
       {draft && (
-        <div className="p-6 bg-gradient-to-br from-purple-50 to-pink-50 border border-purple-200 rounded-lg scale-in space-y-4">
-          <div>
-            <h4 className="font-semibold text-gray-900 mb-3 flex items-center gap-2">
-              <span>📧</span> Email Draft
-            </h4>
-            <div className="bg-white p-4 rounded-lg border border-purple-100 text-sm text-gray-700 whitespace-pre-wrap leading-relaxed">
-              {draft}
-            </div>
-          </div>
-
-          <div className="grid grid-cols-2 gap-3">
-            <button
-              onClick={handleCopy}
-              className={`py-2 px-4 rounded-lg font-medium transition-all ${
-                copied
-                  ? 'bg-green-100 text-green-800'
-                  : 'bg-white text-gray-900 border border-gray-200 hover:bg-gray-50'
-              }`}
-            >
-              {copied ? '✓ Copied!' : 'Copy'}
-            </button>
-            <button
-              onClick={() => setDraft(null)}
-              className="py-2 px-4 bg-white text-gray-900 border border-gray-200 rounded-lg font-medium hover:bg-gray-50 transition-all"
-            >
-              Clear
-            </button>
-          </div>
-
-          <div className="pt-4 border-t border-purple-200 text-xs text-gray-600">
-            💡 Tip: Copy the draft and paste into your email client. Review and customize
-            before sending.
-          </div>
+        <div style={{ padding: '16px', backgroundColor: '#f0fdf4', borderRadius: '8px', borderLeft: '4px solid #059669' }}>
+          <h4 style={{ fontSize: '14px', fontWeight: 'bold', color: '#111', marginBottom: '8px' }}>Draft Message</h4>
+          <p style={{ fontSize: '13px', color: '#333', lineHeight: '1.6', whiteSpace: 'pre-wrap' }}>{draft.draft}</p>
+          <p style={{ fontSize: '12px', color: '#999', marginTop: '8px' }}>
+            Tone: {draft.tone} • Quota: {draft.quota_remaining} remaining
+          </p>
         </div>
       )}
     </div>

@@ -7,6 +7,7 @@ interface Activity {
   type: string
   body: string
   created_at: string
+  event_type: string
 }
 
 interface SummaryResult {
@@ -46,140 +47,63 @@ export function SummarizeButton({
           'x-tenant-id': tenantId,
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          contact_id: contactId,
-          activities: activities.map((a) => ({
-            type: a.type,
-            body: a.body,
-            created_at: a.created_at,
-          })),
-        }),
+        body: JSON.stringify({ contactId, activities }),
       })
-
-      if (res.status === 429) {
-        setError('Quota exceeded. Upgrade to get more summaries.')
-        return
-      }
-
-      if (res.status === 402) {
-        setError('AI not enabled. Upgrade your plan.')
-        return
-      }
 
       if (!res.ok) {
         const data = await res.json()
-        throw new Error(data.error || 'Failed to summarize')
+        throw new Error(data.error || 'Failed to generate summary')
       }
 
-      const data: SummaryResult = await res.json()
+      const data = await res.json()
       setSummary(data)
       onSummaryReceived?.(data)
-    } catch (err: any) {
-      setError(err.message)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Error generating summary')
     } finally {
       setLoading(false)
     }
   }
 
-  const sentimentEmoji = {
-    positive: '😊',
-    neutral: '😐',
-    negative: '😔',
-  }
-
   return (
-    <div className="space-y-4">
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
       <button
         onClick={handleSummarize}
         disabled={loading || activities.length === 0}
-        className={`w-full py-3 px-4 rounded-lg font-medium transition-all duration-200 flex items-center justify-center gap-2 ${
-          loading
-            ? 'bg-blue-100 text-blue-600 cursor-wait'
-            : activities.length === 0
-              ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-              : 'btn-primary'
-        }`}
+        style={{
+          padding: '10px 16px',
+          backgroundColor: loading ? '#e0e0e0' : '#2563eb',
+          color: 'white',
+          borderRadius: '6px',
+          border: 'none',
+          cursor: loading ? 'wait' : 'pointer',
+          fontWeight: 'bold',
+          fontSize: '14px',
+        }}
       >
-        {loading ? (
-          <>
-            <span className="animate-spin">⚙️</span>
-            Analyzing...
-          </>
-        ) : (
-          <>
-            <span>✨</span>
-            Generate AI Summary
-          </>
-        )}
+        {loading ? '⏳ Generating...' : '✨ Generate Summary'}
       </button>
 
       {error && (
-        <div className="p-4 bg-red-50 border border-red-200 rounded-lg scale-in">
-          <div className="flex gap-3">
-            <span>⚠️</span>
-            <div>
-              <p className="font-medium text-red-900">Error</p>
-              <p className="text-sm text-red-700">{error}</p>
-            </div>
-          </div>
+        <div style={{ padding: '12px', backgroundColor: '#fee', borderRadius: '6px', color: '#c33', fontSize: '14px' }}>
+          {error}
         </div>
       )}
 
       {summary && (
-        <div className="p-6 bg-gradient-to-br from-blue-50 to-blue-50/50 border border-blue-200 rounded-lg scale-in space-y-4">
-          <div>
-            <h4 className="font-semibold text-gray-900 mb-3 flex items-center gap-2">
-              <span>📋</span> Summary Points
-            </h4>
-            <ul className="space-y-2">
-              {summary.summary.map((point, i) => (
-                <li key={i} className="flex gap-3 text-sm text-gray-700">
-                  <span className="text-blue-600 font-bold">•</span>
-                  <span>{point}</span>
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          <div className="grid grid-cols-2 gap-4 pt-4 border-t border-blue-200">
-            <div>
-              <p className="text-xs text-gray-600 uppercase tracking-wide font-medium">
-                Sentiment
-              </p>
-              <p className="text-lg font-semibold text-gray-900 mt-1">
-                {sentimentEmoji[summary.sentiment]}{' '}
-                {summary.sentiment.charAt(0).toUpperCase() +
-                  summary.sentiment.slice(1)}
-              </p>
-            </div>
-            <div>
-              <p className="text-xs text-gray-600 uppercase tracking-wide font-medium">
-                Next Action
-              </p>
-              <p className="text-sm font-medium text-gray-900 mt-1 line-clamp-2">
-                {summary.next_action}
-              </p>
-            </div>
-          </div>
-
-          <div className="pt-2 border-t border-blue-200">
-            <p className="text-xs text-gray-600 uppercase tracking-wide font-medium">
-              Quota Used
-            </p>
-            <div className="flex items-center gap-2 mt-2">
-              <div className="flex-1 bg-blue-100 rounded-full h-2 overflow-hidden">
-                <div
-                  className="h-full bg-gradient-to-r from-blue-500 to-blue-600 transition-all duration-300"
-                  style={{
-                    width: `${(summary.units_used / summary.quota_total) * 100}%`,
-                  }}
-                ></div>
-              </div>
-              <span className="text-sm font-medium text-gray-700 whitespace-nowrap">
-                {summary.quota_remaining} left
-              </span>
-            </div>
-          </div>
+        <div style={{ padding: '16px', backgroundColor: '#f0f4ff', borderRadius: '8px', borderLeft: '4px solid #2563eb' }}>
+          <h4 style={{ fontSize: '14px', fontWeight: 'bold', color: '#111', marginBottom: '8px' }}>Summary</h4>
+          <ul style={{ fontSize: '13px', color: '#333', lineHeight: '1.6', listStylePosition: 'inside' }}>
+            {summary.summary.map((point, i) => (
+              <li key={i}>{point}</li>
+            ))}
+          </ul>
+          <p style={{ fontSize: '13px', color: '#666', marginTop: '8px' }}>
+            <strong>Next Action:</strong> {summary.next_action}
+          </p>
+          <p style={{ fontSize: '12px', color: '#999', marginTop: '8px' }}>
+            Quota: {summary.quota_remaining}/{summary.quota_total} remaining
+          </p>
         </div>
       )}
     </div>

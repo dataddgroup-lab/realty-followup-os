@@ -48,8 +48,8 @@ export function QuotaBadge({ tenantId }: { tenantId: string }) {
 
   if (loading) {
     return (
-      <div className="px-3 py-1 bg-gray-200 rounded-full animate-pulse">
-        <span className="text-xs font-medium text-gray-600">Loading...</span>
+      <div style={{ padding: '4px 12px', backgroundColor: '#e5e7eb', borderRadius: '999px', fontSize: '12px', fontWeight: '500', color: '#666' }}>
+        Loading...
       </div>
     )
   }
@@ -59,13 +59,15 @@ export function QuotaBadge({ tenantId }: { tenantId: string }) {
   }
 
   const getColor = () => {
-    if (quota.percentage > 50) return 'bg-green-100 text-green-800'
-    if (quota.percentage > 20) return 'bg-yellow-100 text-yellow-800'
-    return 'bg-red-100 text-red-800'
+    if (quota.percentage > 50) return { bg: '#dcfce7', text: '#166534' }
+    if (quota.percentage > 20) return { bg: '#fef3c7', text: '#92400e' }
+    return { bg: '#fee2e2', text: '#991b1b' }
   }
 
+  const color = getColor()
+
   return (
-    <div className={`px-3 py-1 rounded-full text-xs font-medium ${getColor()}`}>
+    <div style={{ padding: '4px 12px', backgroundColor: color.bg, borderRadius: '999px', fontSize: '12px', fontWeight: '500', color: color.text }}>
       ✨ {quota.remaining} / {quota.total} summaries
     </div>
   )

@@ -46,54 +46,63 @@ export function ContactDetailWithAI({
       setLoading(true)
 
       const contactRes = await fetch(`/api/contacts/${contactId}`, {
-        headers: {
-          'x-tenant-id': tenantId,
-        },
+        headers: { 'x-tenant-id': tenantId },
       })
       if (!contactRes.ok) throw new Error('Failed to fetch contact')
+
       const contactData = await contactRes.json()
       setContact(contactData)
 
-      const timelineRes = await fetch(
-        `/api/contacts/${contactId}/timeline`,
-        {
-          headers: {
-            'x-tenant-id': tenantId,
-          },
-        }
-      )
+      const timelineRes = await fetch(`/api/contacts/${contactId}/timeline`, {
+        headers: { 'x-tenant-id': tenantId },
+      })
       if (!timelineRes.ok) throw new Error('Failed to fetch timeline')
+
       const timelineData = await timelineRes.json()
-      setTimeline(timelineData.timeline)
-    } catch (err: any) {
-      setError(err.message)
+      setTimeline(timelineData)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Error loading contact')
     } finally {
       setLoading(false)
     }
   }
 
+  const handleAddActivity = async (body: string, eventType: string) => {
+    try {
+      const res = await fetch('/api/activities', {
+        method: 'POST',
+        headers: {
+          'x-tenant-id': tenantId,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ contact_id: contactId, body, event_type: eventType }),
+      })
+      if (!res.ok) throw new Error('Failed to add activity')
+      await fetchContactAndTimeline()
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Error adding activity')
+    }
+  }
+
   if (loading) {
-    return (
-      <div className="bg-white rounded-xl border border-gray-200 p-8 card-shadow">
-        <div className="animate-pulse space-y-4">
-          <div className="h-8 bg-gray-200 rounded w-1/3"></div>
-          <div className="space-y-3">
-            {[...Array(3)].map((_, i) => (
-              <div key={i} className="h-12 bg-gray-100 rounded-lg"></div>
-            ))}
-          </div>
-        </div>
-      </div>
-    )
+    return <div style={{ padding: '24px', textAlign: 'center', color: '#999' }}>Loading contact...</div>
   }
 
   if (!contact) {
     return (
-      <div className="bg-white rounded-xl border border-gray-200 p-8 text-center card-shadow">
-        <p className="text-gray-600">Contact not found</p>
+      <div style={{ padding: '24px', textAlign: 'center', backgroundColor: '#f9f9f9', borderRadius: '8px' }}>
+        <p style={{ color: '#666' }}>Contact not found</p>
         <button
           onClick={onBack}
-          className="mt-4 btn-secondary"
+          style={{
+            marginTop: '16px',
+            padding: '8px 16px',
+            backgroundColor: '#666',
+            color: 'white',
+            borderRadius: '6px',
+            border: 'none',
+            cursor: 'pointer',
+          }}
         >
           Back
         </button>
@@ -109,167 +118,170 @@ export function ContactDetailWithAI({
     event_type: t.event_type
   }))
 
-  const contextText = activitiesForText
-    .map(a => `${a.type}: ${a.body}`)
-    .join('\n')
-
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="bg-white rounded-xl border border-gray-200 p-6 card-shadow">
-        <button
-          onClick={onBack}
-          className="text-blue-600 hover:text-blue-700 mb-4 text-sm font-medium flex items-center gap-1"
-        >
-          ← Back to Contacts
-        </button>
-        <div className="flex justify-between items-start gap-4">
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+      {/* Back Button */}
+      <button
+        onClick={onBack}
+        style={{
+          padding: '8px 16px',
+          backgroundColor: '#e5e7eb',
+          color: '#111',
+          borderRadius: '6px',
+          border: 'none',
+          cursor: 'pointer',
+          fontWeight: '500',
+          fontSize: '14px',
+        }}
+      >
+        ← Back
+      </button>
+
+      {/* Contact Header */}
+      <div style={{ backgroundColor: '#fff', padding: '24px', borderRadius: '8px', border: '1px solid #e5e7eb' }}>
+        <h1 style={{ fontSize: '28px', fontWeight: 'bold', color: '#111' }}>{contact.name}</h1>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '16px', marginTop: '16px', fontSize: '14px' }}>
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">{contact.name}</h1>
-            {contact.email && (
-              <p className="text-gray-600 mt-1">{contact.email}</p>
-            )}
-            {contact.phone && (
-              <p className="text-gray-600">{contact.phone}</p>
-            )}
-            <p className="text-sm text-gray-500 mt-3">
-              Added {new Date(contact.created_at).toLocaleDateString()}
-            </p>
+            <p style={{ color: '#666' }}>Email</p>
+            <p style={{ fontWeight: '500', color: '#111', marginTop: '4px' }}>{contact.email || 'N/A'}</p>
           </div>
-          <span
-            className={`px-4 py-2 rounded-full text-sm font-medium ${
-              contact.status === 'active'
-                ? 'badge-success'
-                : 'bg-gray-100 text-gray-800'
-            }`}
-          >
-            {contact.status}
-          </span>
+          <div>
+            <p style={{ color: '#666' }}>Phone</p>
+            <p style={{ fontWeight: '500', color: '#111', marginTop: '4px' }}>{contact.phone || 'N/A'}</p>
+          </div>
+          <div>
+            <p style={{ color: '#666' }}>Status</p>
+            <p style={{ fontWeight: '500', color: '#111', marginTop: '4px' }}>{contact.status}</p>
+          </div>
         </div>
       </div>
 
-      {error && (
-        <div className="p-4 bg-red-50 border border-red-200 rounded-lg">
-          <p className="text-sm text-red-700">{error}</p>
-        </div>
-      )}
-
       {/* Tabs */}
-      <div className="bg-white rounded-xl border border-gray-200 overflow-hidden card-shadow">
-        <div className="flex border-b border-gray-200">
-          <button
-            onClick={() => setActiveTab('timeline')}
-            className={`flex-1 py-4 px-6 font-medium transition ${
-              activeTab === 'timeline'
-                ? 'border-b-2 border-blue-600 text-blue-600'
-                : 'text-gray-600 hover:text-gray-900'
-            }`}
-          >
-            📅 Timeline ({timeline.length})
-          </button>
-          <button
-            onClick={() => setActiveTab('ai')}
-            className={`flex-1 py-4 px-6 font-medium transition ${
-              activeTab === 'ai'
-                ? 'border-b-2 border-blue-600 text-blue-600'
-                : 'text-gray-600 hover:text-gray-900'
-            }`}
-          >
-            ✨ AI Tools
-          </button>
-        </div>
+      <div style={{ display: 'flex', gap: '16px', borderBottom: '1px solid #e5e7eb' }}>
+        <button
+          onClick={() => setActiveTab('timeline')}
+          style={{
+            padding: '12px 16px',
+            backgroundColor: activeTab === 'timeline' ? '#2563eb' : 'transparent',
+            color: activeTab === 'timeline' ? 'white' : '#666',
+            border: 'none',
+            cursor: 'pointer',
+            fontWeight: '500',
+            fontSize: '14px',
+          }}
+        >
+          Timeline
+        </button>
+        <button
+          onClick={() => setActiveTab('ai')}
+          style={{
+            padding: '12px 16px',
+            backgroundColor: activeTab === 'ai' ? '#2563eb' : 'transparent',
+            color: activeTab === 'ai' ? 'white' : '#666',
+            border: 'none',
+            cursor: 'pointer',
+            fontWeight: '500',
+            fontSize: '14px',
+          }}
+        >
+          AI Tools
+        </button>
+      </div>
 
-        {/* Timeline Tab */}
-        {activeTab === 'timeline' && (
-          <div className="divide-y divide-gray-200">
+      {/* Tab Content */}
+      {activeTab === 'timeline' ? (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+          {/* Add Activity */}
+          <div style={{ padding: '16px', backgroundColor: '#f9f9f9', borderRadius: '8px', border: '1px solid #ddd' }}>
+            <h3 style={{ fontSize: '16px', fontWeight: 'bold', color: '#111', marginBottom: '12px' }}>Add Activity</h3>
+            <div style={{ display: 'flex', gap: '8px' }}>
+              <button
+                onClick={() => handleAddActivity('Called', 'call')}
+                style={{
+                  padding: '8px 12px',
+                  backgroundColor: '#3b82f6',
+                  color: 'white',
+                  borderRadius: '6px',
+                  border: 'none',
+                  cursor: 'pointer',
+                  fontSize: '12px',
+                }}
+              >
+                Call
+              </button>
+              <button
+                onClick={() => handleAddActivity('Sent email', 'email')}
+                style={{
+                  padding: '8px 12px',
+                  backgroundColor: '#10b981',
+                  color: 'white',
+                  borderRadius: '6px',
+                  border: 'none',
+                  cursor: 'pointer',
+                  fontSize: '12px',
+                }}
+              >
+                Email
+              </button>
+              <button
+                onClick={() => handleAddActivity('Meeting scheduled', 'meeting')}
+                style={{
+                  padding: '8px 12px',
+                  backgroundColor: '#f59e0b',
+                  color: 'white',
+                  borderRadius: '6px',
+                  border: 'none',
+                  cursor: 'pointer',
+                  fontSize: '12px',
+                }}
+              >
+                Meeting
+              </button>
+            </div>
+          </div>
+
+          {/* Timeline */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
             {timeline.length === 0 ? (
-              <div className="p-12 text-center">
-                <p className="text-gray-600">No activities logged yet</p>
-              </div>
+              <p style={{ color: '#999', textAlign: 'center', padding: '24px' }}>No activities yet</p>
             ) : (
-              timeline.map((item) => (
-                <div key={item.id} className="p-6 hover:bg-gray-50 transition">
-                  <div className="flex gap-4">
-                    <div className="flex-shrink-0 w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center text-blue-600 font-semibold text-sm">
-                      {item.event_type === 'activity' ? '📝' : '🏠'}
-                    </div>
-                    <div className="flex-1">
-                      <p className="font-semibold text-gray-900 capitalize">
-                        {item.event_type === 'activity'
-                          ? item.body || 'Activity'
-                          : 'Showing'}
-                      </p>
-                      <p className="text-xs text-gray-500 mt-1">
-                        {new Date(item.created_at).toLocaleDateString(undefined, {
-                          weekday: 'short',
-                          month: 'short',
-                          day: 'numeric',
-                          hour: '2-digit',
-                          minute: '2-digit',
-                        })}
-                      </p>
-                    </div>
+              timeline.map((activity) => (
+                <div key={activity.id} style={{ padding: '12px', backgroundColor: '#f9f9f9', borderRadius: '6px', borderLeft: '3px solid #3b82f6' }}>
+                  <div style={{ fontWeight: '500', color: '#111', fontSize: '14px' }}>{activity.type}</div>
+                  <div style={{ fontSize: '13px', color: '#666', marginTop: '4px' }}>{activity.body}</div>
+                  <div style={{ fontSize: '12px', color: '#999', marginTop: '4px' }}>
+                    {new Date(activity.created_at).toLocaleDateString()}
                   </div>
                 </div>
               ))
             )}
           </div>
-        )}
-
-        {/* AI Tools Tab */}
-        {activeTab === 'ai' && (
-          <div className="p-6 space-y-8">
-            {/* Summary */}
-            <div>
-              <h3 className="font-semibold text-gray-900 mb-4 flex items-center gap-2">
-                <span>📊</span> Contact Summary
-              </h3>
-              {timeline.length > 0 ? (
-                <SummarizeButton
-                  contactId={contactId}
-                  activities={activitiesForText}
-                  tenantId={tenantId}
-                />
-              ) : (
-                <p className="text-sm text-gray-600">Add activities to generate summary</p>
-              )}
-            </div>
-
-            {/* Draft Message */}
-            <div className="pt-6 border-t border-gray-200">
-              <h3 className="font-semibold text-gray-900 mb-4 flex items-center gap-2">
-                <span>✉️</span> Draft Email
-              </h3>
-              {contact.email ? (
-                <DraftMessageButton
-                  contactName={contact.name}
-                  contactEmail={contact.email}
-                  context={contextText || 'New contact follow-up'}
-                  tenantId={tenantId}
-                />
-              ) : (
-                <p className="text-sm text-gray-600">Add email address to draft messages</p>
-              )}
-            </div>
-
-            {/* Auto Tasks */}
-            <div className="pt-6 border-t border-gray-200">
-              <h3 className="font-semibold text-gray-900 mb-4 flex items-center gap-2">
-                <span>✓</span> Suggested Tasks
-              </h3>
-              {timeline.length > 0 ? (
-                <GenerateTasksButton
-                  contactName={contact.name}
-                  activities={activitiesForText}
-                  tenantId={tenantId}
-                />
-              ) : (
-                <p className="text-sm text-gray-600">Add activities to generate tasks</p>
-              )}
-            </div>
+        </div>
+      ) : (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+          {/* Summarize */}
+          <div>
+            <h3 style={{ fontSize: '16px', fontWeight: 'bold', color: '#111', marginBottom: '12px' }}>📊 Contact Summary</h3>
+            {timeline.length > 0 ? (
+              <SummarizeButton contactId={contactId} activities={activitiesForText} tenantId={tenantId} />
+            ) : (
+              <p style={{ fontSize: '14px', color: '#666' }}>Add activities to generate summary</p>
+            )}
           </div>
-        )}
-      </div>
+
+          {/* Draft Message */}
+          <div>
+            <h3 style={{ fontSize: '16px', fontWeight: 'bold', color: '#111', marginBottom: '12px' }}>📧 Draft Message</h3>
+            <DraftMessageButton contactId={contactId} contactName={contact.name} tenantId={tenantId} />
+          </div>
+
+          {/* Generate Tasks */}
+          <div>
+            <h3 style={{ fontSize: '16px', fontWeight: 'bold', color: '#111', marginBottom: '12px' }}>✓ Generate Tasks</h3>
+            <GenerateTasksButton contactId={contactId} contactName={contact.name} tenantId={tenantId} />
+          </div>
+        </div>
+      )}
     </div>
   )
 }
