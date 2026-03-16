@@ -12,8 +12,5 @@
     "test:e2e": "cd app/web && npx playwright test",
     "db:push": "supabase db push --project-ref $SUPABASE_PROJECT_REF",
     "db:diff": "supabase db diff --project-ref $SUPABASE_PROJECT_REF"
-  },
-  "workspaces": [
-    "app/web"
-  ]
+  }
 }
