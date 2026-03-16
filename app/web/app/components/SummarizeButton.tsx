@@ -57,7 +57,6 @@ export function SummarizeButton({
       })
 
       if (res.status === 429) {
-        const data = await res.json()
         setError('Quota exceeded. Upgrade to get more summaries.')
         return
       }
@@ -82,56 +81,104 @@ export function SummarizeButton({
     }
   }
 
+  const sentimentEmoji = {
+    positive: '😊',
+    neutral: '😐',
+    negative: '😔',
+  }
+
   return (
     <div className="space-y-4">
       <button
         onClick={handleSummarize}
         disabled={loading || activities.length === 0}
-        className="px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed transition"
+        className={`w-full py-3 px-4 rounded-lg font-medium transition-all duration-200 flex items-center justify-center gap-2 ${
+          loading
+            ? 'bg-primary-100 text-primary-600 cursor-wait'
+            : activities.length === 0
+              ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+              : 'btn-primary'
+        }`}
       >
-        {loading ? '✨ Summarizing...' : '✨ AI Summary'}
+        {loading ? (
+          <>
+            <span className="animate-spin">⚙️</span>
+            Analyzing...
+          </>
+        ) : (
+          <>
+            <span>✨</span>
+            Generate AI Summary
+          </>
+        )}
       </button>
 
       {error && (
-        <div className="p-4 bg-red-50 border border-red-200 rounded-lg">
-          <p className="text-sm text-red-700">{error}</p>
+        <div className="p-4 bg-red-50 border border-red-200 rounded-lg scale-in">
+          <div className="flex gap-3">
+            <span>⚠️</span>
+            <div>
+              <p className="font-medium text-red-900">Error</p>
+              <p className="text-sm text-red-700">{error}</p>
+            </div>
+          </div>
         </div>
       )}
 
       {summary && (
-        <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg space-y-3">
+        <div className="p-6 bg-gradient-to-br from-blue-50 to-blue-50/50 border border-blue-200 rounded-lg scale-in space-y-4">
           <div>
-            <h4 className="font-semibold text-gray-900 mb-2">Summary</h4>
-            <ul className="space-y-1">
+            <h4 className="font-semibold text-gray-900 mb-3 flex items-center gap-2">
+              <span>📋</span> Summary Points
+            </h4>
+            <ul className="space-y-2">
               {summary.summary.map((point, i) => (
-                <li key={i} className="text-sm text-gray-700">
-                  • {point}
+                <li key={i} className="flex gap-3 text-sm text-gray-700">
+                  <span className="text-primary-600 font-bold">•</span>
+                  <span>{point}</span>
                 </li>
               ))}
             </ul>
           </div>
 
-          <div className="flex items-center gap-4 pt-2 border-t border-blue-200">
+          <div className="grid grid-cols-2 gap-4 pt-4 border-t border-blue-200">
             <div>
-              <p className="text-xs text-gray-600 uppercase tracking-wide">Sentiment</p>
-              <p className="font-medium text-gray-900">
+              <p className="text-xs text-gray-600 uppercase tracking-wide font-medium">
+                Sentiment
+              </p>
+              <p className="text-lg font-semibold text-gray-900 mt-1">
+                {sentimentEmoji[summary.sentiment]}{' '}
                 {summary.sentiment.charAt(0).toUpperCase() +
                   summary.sentiment.slice(1)}
               </p>
             </div>
             <div>
-              <p className="text-xs text-gray-600 uppercase tracking-wide">Next Action</p>
-              <p className="font-medium text-gray-900 max-w-xs">
+              <p className="text-xs text-gray-600 uppercase tracking-wide font-medium">
+                Next Action
+              </p>
+              <p className="text-sm font-medium text-gray-900 mt-1 line-clamp-2">
                 {summary.next_action}
               </p>
             </div>
           </div>
 
           <div className="pt-2 border-t border-blue-200">
-            <p className="text-xs text-gray-600 uppercase tracking-wide">Quota Used</p>
-            <p className="text-sm text-gray-700">
-              {summary.units_used} unit • {summary.quota_remaining} remaining
+            <p className="text-xs text-gray-600 uppercase tracking-wide font-medium">
+              Quota Used
             </p>
+            <div className="flex items-center gap-2 mt-2">
+              <div className="flex-1 bg-blue-100 rounded-full h-2 overflow-hidden">
+                <div
+                  className="h-full bg-gradient-to-r from-primary-500 to-primary-600 transition-all duration-300"
+                  style={{
+                    width: `${(summary.units_used / summary.quota_total) * 100}%`,
+                  }}
+                ></div>
+              </div>
+              <span className="text-sm font-medium text-gray-700 whitespace-nowrap">
+                {summary.quota_remaining} left
+              </span>
+            </div>
           </div>
         </div>
       )}
