@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { ContactsList } from './components/ContactsList'
-import { ContactDetail } from './components/ContactDetail'
+import { ContactDetailWithAI } from './components/ContactDetailWithAI'
 import { QuotaBadge } from './components/QuotaBadge'
 
 export default function Home() {
@@ -46,7 +46,7 @@ export default function Home() {
       )}
 
       {view === 'detail' && selectedContactId && (
-        <ContactDetail
+        <ContactDetailWithAI
           contactId={selectedContactId}
           tenantId={tenantId}
           onBack={handleBack}
