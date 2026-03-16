@@ -1,80 +1,247 @@
+'use client'
+
+import { useEffect, useState } from 'react'
+import { ContactsList } from './components/ContactsList'
+import { ContactDetail } from './components/ContactDetail'
+import { QuotaBadge } from './components/QuotaBadge'
+
 export default function Home() {
+  const [view, setView] = useState<'list' | 'detail'>('list')
+  const [selectedContactId, setSelectedContactId] = useState<string | null>(null)
+  const [tenantId] = useState('demo-tenant-1') // In real app, from auth
+
+  const handleSelectContact = (contactId: string) => {
+    setSelectedContactId(contactId)
+    setView('detail')
+  }
+
+  const handleBack = () => {
+    setView('list')
+    setSelectedContactId(null)
+  }
+
   return (
-    <div className="space-y-8">
-      {/* Welcome Section */}
+    <div className="space-y-6">
+      {/* Header with Quota Badge */}
+      <div className="flex justify-between items-center">
+        <h1 className="text-2xl font-bold text-gray-900">Contacts</h1>
+        <QuotaBadge tenantId={tenantId} />
+      </div>
+
+      {/* View Switcher */}
+      {view === 'list' && (
+        <div
+          onClick={(e) => {
+            // Handle contact selection from list
+            const contactCards = document.querySelectorAll('[data-contact-id]')
+            contactCards.forEach((card) => {
+              card.addEventListener('click', () => {
+                const id = card.getAttribute('data-contact-id')
+                if (id) handleSelectContact(id)
+              })
+            })
+          }}
+        >
+          <ContactsListWithSelection
+            tenantId={tenantId}
+            onSelectContact={handleSelectContact}
+          />
+        </div>
+      )}
+
+      {view === 'detail' && selectedContactId && (
+        <ContactDetail
+          contactId={selectedContactId}
+          tenantId={tenantId}
+          onBack={handleBack}
+        />
+      )}
+    </div>
+  )
+}
+
+function ContactsListWithSelection({
+  tenantId,
+  onSelectContact,
+}: {
+  tenantId: string
+  onSelectContact: (contactId: string) => void
+}) {
+  const [contacts, setContacts] = useState<any[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+  const [showForm, setShowForm] = useState(false)
+  const [formData, setFormData] = useState({
+    name: '',
+    email: '',
+    phone: '',
+  })
+
+  useEffect(() => {
+    fetchContacts()
+  }, [tenantId])
+
+  const fetchContacts = async () => {
+    try {
+      setLoading(true)
+      const res = await fetch('/api/contacts', {
+        headers: {
+          'x-tenant-id': tenantId,
+        },
+      })
+
+      if (!res.ok) throw new Error('Failed to fetch contacts')
+      const data = await res.json()
+      setContacts(data)
+    } catch (err: any) {
+      setError(err.message)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    try {
+      const res = await fetch('/api/contacts', {
+        method: 'POST',
+        headers: {
+          'x-tenant-id': tenantId,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData),
+      })
+
+      if (!res.ok) throw new Error('Failed to create contact')
+      const newContact = await res.json()
+      setContacts([newContact, ...contacts])
+      setFormData({ name: '', email: '', phone: '' })
+      setShowForm(false)
+    } catch (err: any) {
+      setError(err.message)
+    }
+  }
+
+  if (loading) {
+    return (
       <div className="bg-white rounded-lg border border-gray-200 p-8">
-        <h1 className="text-3xl font-bold text-gray-900 mb-4">
-          Welcome to Realty Follow-Up OS
-        </h1>
-        <p className="text-lg text-gray-600 mb-6">
-          AI-powered CRM for real estate agents. Manage contacts, track activities, and get AI summaries.
-        </p>
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          <div className="bg-blue-50 p-6 rounded-lg border border-blue-200">
-            <h3 className="font-semibold text-gray-900 mb-2">📋 Contacts</h3>
-            <p className="text-sm text-gray-600">Create and manage contact information</p>
-          </div>
-          <div className="bg-blue-50 p-6 rounded-lg border border-blue-200">
-            <h3 className="font-semibold text-gray-900 mb-2">📅 Timeline</h3>
-            <p className="text-sm text-gray-600">View all activities and interactions</p>
-          </div>
-          <div className="bg-blue-50 p-6 rounded-lg border border-blue-200">
-            <h3 className="font-semibold text-gray-900 mb-2">✨ AI Summary</h3>
-            <p className="text-sm text-gray-600">Get AI-powered contact summaries</p>
+        <div className="animate-pulse">
+          <div className="h-8 bg-gray-200 rounded w-1/4 mb-4"></div>
+          <div className="space-y-3">
+            {[...Array(3)].map((_, i) => (
+              <div key={i} className="h-12 bg-gray-100 rounded"></div>
+            ))}
           </div>
         </div>
       </div>
+    )
+  }
 
-      {/* Getting Started */}
-      <div className="bg-white rounded-lg border border-gray-200 p-8">
-        <h2 className="text-2xl font-semibold text-gray-900 mb-4">Getting Started</h2>
-        <div className="space-y-4">
-          <div className="flex gap-4">
-            <div className="flex-shrink-0 w-8 h-8 bg-primary-600 text-white rounded-full flex items-center justify-center font-bold text-sm">
-              1
-            </div>
-            <div>
-              <h3 className="font-semibold text-gray-900">Sign In</h3>
-              <p className="text-sm text-gray-600">Set up your account with Supabase authentication</p>
-            </div>
-          </div>
-          <div className="flex gap-4">
-            <div className="flex-shrink-0 w-8 h-8 bg-primary-600 text-white rounded-full flex items-center justify-center font-bold text-sm">
-              2
-            </div>
-            <div>
-              <h3 className="font-semibold text-gray-900">Create Contacts</h3>
-              <p className="text-sm text-gray-600">Add the people you want to follow up with</p>
-            </div>
-          </div>
-          <div className="flex gap-4">
-            <div className="flex-shrink-0 w-8 h-8 bg-primary-600 text-white rounded-full flex items-center justify-center font-bold text-sm">
-              3
-            </div>
-            <div>
-              <h3 className="font-semibold text-gray-900">Log Activities</h3>
-              <p className="text-sm text-gray-600">Record calls, emails, meetings, and showings</p>
-            </div>
-          </div>
-          <div className="flex gap-4">
-            <div className="flex-shrink-0 w-8 h-8 bg-primary-600 text-white rounded-full flex items-center justify-center font-bold text-sm">
-              4
-            </div>
-            <div>
-              <h3 className="font-semibold text-gray-900">Get AI Summaries</h3>
-              <p className="text-sm text-gray-600">Click summarize to get AI-powered contact insights</p>
-            </div>
-          </div>
+  return (
+    <div className="bg-white rounded-lg border border-gray-200">
+      {/* Header */}
+      <div className="border-b border-gray-200 p-6 flex justify-between items-center">
+        <h2 className="text-xl font-semibold text-gray-900">All Contacts</h2>
+        <button
+          onClick={() => setShowForm(!showForm)}
+          className="px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition"
+        >
+          {showForm ? 'Cancel' : '+ New Contact'}
+        </button>
+      </div>
+
+      {/* Error */}
+      {error && (
+        <div className="p-6 bg-red-50 border-b border-red-200">
+          <p className="text-sm text-red-700">{error}</p>
         </div>
-      </div>
+      )}
 
-      {/* Status */}
-      <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-8">
-        <h3 className="font-semibold text-yellow-900 mb-2">🚀 MVP Status</h3>
-        <p className="text-sm text-yellow-800">
-          This is an early version. Authentication and full feature set coming soon.
-        </p>
-      </div>
+      {/* Form */}
+      {showForm && (
+        <div className="p-6 border-b border-gray-200 bg-gray-50">
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <input
+              type="text"
+              placeholder="Name *"
+              value={formData.name}
+              onChange={(e) =>
+                setFormData({ ...formData, name: e.target.value })
+              }
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+              required
+            />
+            <input
+              type="email"
+              placeholder="Email"
+              value={formData.email}
+              onChange={(e) =>
+                setFormData({ ...formData, email: e.target.value })
+              }
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+            />
+            <input
+              type="tel"
+              placeholder="Phone"
+              value={formData.phone}
+              onChange={(e) =>
+                setFormData({ ...formData, phone: e.target.value })
+              }
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+            />
+            <button
+              type="submit"
+              className="w-full px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition"
+            >
+              Create Contact
+            </button>
+          </form>
+        </div>
+      )}
+
+      {/* List */}
+      {contacts.length === 0 ? (
+        <div className="p-12 text-center">
+          <p className="text-gray-600">No contacts yet. Create your first one!</p>
+        </div>
+      ) : (
+        <div className="divide-y divide-gray-200">
+          {contacts.map((contact) => (
+            <div
+              key={contact.id}
+              data-contact-id={contact.id}
+              onClick={() => onSelectContact(contact.id)}
+              className="p-6 hover:bg-gray-50 transition cursor-pointer"
+            >
+              <div className="flex justify-between items-start">
+                <div>
+                  <h3 className="font-semibold text-gray-900">
+                    {contact.name}
+                  </h3>
+                  {contact.email && (
+                    <p className="text-sm text-gray-600">{contact.email}</p>
+                  )}
+                  {contact.phone && (
+                    <p className="text-sm text-gray-600">{contact.phone}</p>
+                  )}
+                  <p className="text-xs text-gray-500 mt-2">
+                    {new Date(contact.created_at).toLocaleDateString()}
+                  </p>
+                </div>
+                <span
+                  className={`px-3 py-1 rounded-full text-sm font-medium ${
+                    contact.status === 'active'
+                      ? 'bg-green-100 text-green-800'
+                      : 'bg-gray-100 text-gray-800'
+                  }`}
+                >
+                  {contact.status}
+                </span>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   )
 }
