@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { ContactsList } from './components/ContactsList'
 import { ContactDetailWithAI } from './components/ContactDetailWithAI'
 import { QuotaBadge } from './components/QuotaBadge'
