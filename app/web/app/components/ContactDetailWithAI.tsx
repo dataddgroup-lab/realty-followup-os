@@ -34,7 +34,6 @@ export function ContactDetailWithAI({
   const [contact, setContact] = useState<Contact | null>(null)
   const [timeline, setTimeline] = useState<Activity[]>([])
   const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
   const [activeTab, setActiveTab] = useState<'timeline' | 'ai'>('timeline')
 
   useEffect(() => {
@@ -61,7 +60,7 @@ export function ContactDetailWithAI({
       const timelineData = await timelineRes.json()
       setTimeline(timelineData)
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Error loading contact')
+      console.error(err instanceof Error ? err.message : 'Error loading contact')
     } finally {
       setLoading(false)
     }
@@ -80,7 +79,7 @@ export function ContactDetailWithAI({
       if (!res.ok) throw new Error('Failed to add activity')
       await fetchContactAndTimeline()
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Error adding activity')
+      console.error(err instanceof Error ? err.message : 'Error adding activity')
     }
   }
 
