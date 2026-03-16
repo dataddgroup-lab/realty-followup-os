@@ -102,9 +102,11 @@ export function ContactDetailWithAI({
   }
 
   const activitiesForText = timeline.map(t => ({
+    id: t.id,
     type: t.event_type,
     body: t.body || t.type,
-    created_at: t.created_at
+    created_at: t.created_at,
+    event_type: t.event_type
   }))
 
   const contextText = activitiesForText
