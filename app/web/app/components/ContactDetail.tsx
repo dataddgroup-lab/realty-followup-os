@@ -107,7 +107,7 @@ export function ContactDetail({
       <div className="bg-white rounded-lg border border-gray-200 p-6">
         <button
           onClick={onBack}
-          className="text-primary-600 hover:text-primary-700 mb-4 text-sm font-medium"
+          className="text-blue-600 hover:text-blue-700 mb-4 text-sm font-medium"
         >
           ← Back
         </button>
@@ -176,7 +176,7 @@ export function ContactDetail({
             {timeline.map((item) => (
               <div key={item.id} className="p-6 hover:bg-gray-50">
                 <div className="flex gap-4">
-                  <div className="flex-shrink-0 w-10 h-10 bg-primary-100 rounded-full flex items-center justify-center text-primary-600 font-semibold text-sm">
+                  <div className="flex-shrink-0 w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center text-blue-600 font-semibold text-sm">
                     {item.type === 'activity'
                       ? item.body?.charAt(0) || '📋'
                       : '🏠'}

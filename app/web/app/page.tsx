@@ -173,7 +173,7 @@ function ContactsListWithSelection({
                 onChange={(e) =>
                   setFormData({ ...formData, name: e.target.value })
                 }
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2"
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
                 required
               />
             </div>
@@ -188,7 +188,7 @@ function ContactsListWithSelection({
                 onChange={(e) =>
                   setFormData({ ...formData, email: e.target.value })
                 }
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2"
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
               />
             </div>
             <div>
@@ -202,7 +202,7 @@ function ContactsListWithSelection({
                 onChange={(e) =>
                   setFormData({ ...formData, phone: e.target.value })
                 }
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2"
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
               />
             </div>
             <button type="submit" className="btn-primary w-full">
@@ -227,11 +227,11 @@ function ContactsListWithSelection({
             <div
               key={contact.id}
               onClick={() => onSelectContact(contact.id)}
-              className="p-6 hover:bg-gradient-to-r hover:from-primary-50 hover:to-transparent transition cursor-pointer group"
+              className="p-6 hover:bg-gradient-to-r hover:from-blue-50 hover:to-transparent transition cursor-pointer group"
             >
               <div className="flex justify-between items-start gap-4">
                 <div className="flex-1">
-                  <h3 className="font-semibold text-gray-900 group-hover:text-primary-600 transition">
+                  <h3 className="font-semibold text-gray-900 group-hover:text-blue-600 transition">
                     {contact.name}
                   </h3>
                   <div className="flex flex-col sm:flex-row gap-2 mt-2 text-sm text-gray-600">
@@ -261,7 +261,7 @@ function ContactsListWithSelection({
                   >
                     {contact.status}
                   </span>
-                  <span className="text-gray-400 group-hover:text-primary-600 transition">
+                  <span className="text-gray-400 group-hover:text-blue-600 transition">
                     →
                   </span>
                 </div>

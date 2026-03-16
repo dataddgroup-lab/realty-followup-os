@@ -94,7 +94,7 @@ export function SummarizeButton({
         disabled={loading || activities.length === 0}
         className={`w-full py-3 px-4 rounded-lg font-medium transition-all duration-200 flex items-center justify-center gap-2 ${
           loading
-            ? 'bg-primary-100 text-primary-600 cursor-wait'
+            ? 'bg-blue-100 text-blue-600 cursor-wait'
             : activities.length === 0
               ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
               : 'btn-primary'
@@ -134,7 +134,7 @@ export function SummarizeButton({
             <ul className="space-y-2">
               {summary.summary.map((point, i) => (
                 <li key={i} className="flex gap-3 text-sm text-gray-700">
-                  <span className="text-primary-600 font-bold">•</span>
+                  <span className="text-blue-600 font-bold">•</span>
                   <span>{point}</span>
                 </li>
               ))}
@@ -169,7 +169,7 @@ export function SummarizeButton({
             <div className="flex items-center gap-2 mt-2">
               <div className="flex-1 bg-blue-100 rounded-full h-2 overflow-hidden">
                 <div
-                  className="h-full bg-gradient-to-r from-primary-500 to-primary-600 transition-all duration-300"
+                  className="h-full bg-gradient-to-r from-blue-500 to-blue-600 transition-all duration-300"
                   style={{
                     width: `${(summary.units_used / summary.quota_total) * 100}%`,
                   }}

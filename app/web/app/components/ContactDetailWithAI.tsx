@@ -117,7 +117,7 @@ export function ContactDetailWithAI({
       <div className="bg-white rounded-xl border border-gray-200 p-6 card-shadow">
         <button
           onClick={onBack}
-          className="text-primary-600 hover:text-primary-700 mb-4 text-sm font-medium flex items-center gap-1"
+          className="text-blue-600 hover:text-blue-700 mb-4 text-sm font-medium flex items-center gap-1"
         >
           ← Back to Contacts
         </button>
@@ -159,7 +159,7 @@ export function ContactDetailWithAI({
             onClick={() => setActiveTab('timeline')}
             className={`flex-1 py-4 px-6 font-medium transition ${
               activeTab === 'timeline'
-                ? 'border-b-2 border-primary-600 text-primary-600'
+                ? 'border-b-2 border-blue-600 text-blue-600'
                 : 'text-gray-600 hover:text-gray-900'
             }`}
           >
@@ -169,7 +169,7 @@ export function ContactDetailWithAI({
             onClick={() => setActiveTab('ai')}
             className={`flex-1 py-4 px-6 font-medium transition ${
               activeTab === 'ai'
-                ? 'border-b-2 border-primary-600 text-primary-600'
+                ? 'border-b-2 border-blue-600 text-blue-600'
                 : 'text-gray-600 hover:text-gray-900'
             }`}
           >
@@ -188,7 +188,7 @@ export function ContactDetailWithAI({
               timeline.map((item) => (
                 <div key={item.id} className="p-6 hover:bg-gray-50 transition">
                   <div className="flex gap-4">
-                    <div className="flex-shrink-0 w-10 h-10 bg-primary-100 rounded-full flex items-center justify-center text-primary-600 font-semibold text-sm">
+                    <div className="flex-shrink-0 w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center text-blue-600 font-semibold text-sm">
                       {item.event_type === 'activity' ? '📝' : '🏠'}
                     </div>
                     <div className="flex-1">
